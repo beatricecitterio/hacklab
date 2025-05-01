@@ -6,7 +6,7 @@ from openai_api import send_request, build_prompt
 def draft_future_complaint(complaints: str) -> str:
 
     # Load the complaints
-    complaints_df = pd.read_csv('complaints.csv')
+    complaints_df = pd.read_csv('Complaints.csv')
     complaints_df['complaint'] = complaints_df['complaint'].astype(str)
 
     # Merge complaints and build the vectorizer
@@ -40,16 +40,21 @@ def draft_future_complaint(complaints: str) -> str:
     ### -------------------------------------------------- ###
     ### --- Send the request ----------------------------- ###
 
-    response = send_request(
+    status_code, response = send_request(
         input=prompt,
         model="gpt-4.1-mini",
         temperature=0.8,
         max_tokens=1000
     )
+    if status_code != 200:
+        if status_code == 401:
+            return "Error: The API key is missing or invalid."
+        else:
+            return "Error: Unable to process the request. Please try again later."
+    
     next_complaint = response.output[0].content[0].text
     print("Next complaint prediction:")
     print(next_complaint)
-
     return next_complaint
 
 
