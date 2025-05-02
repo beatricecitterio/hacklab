@@ -1,5 +1,5 @@
 import streamlit as st
-from genai import draft_future_complaint
+# from genai import draft_future_complaint
 import os
 import ml
 
@@ -33,9 +33,9 @@ do_churn = st.checkbox("Predict churn", value=False)
 complaint = st.chat_input(placeholder="Insert the complaint here")
 if complaint:
     if do_draft:
-        next_complaint = draft_future_complaint(complaint)
+        # next_complaint = draft_future_complaint(complaint)
         st.write("Drafted complaint:")
-        st.write(next_complaint)
+        # st.write(next_complaint)
     if do_churn:
         st.write("Churn prediction:")
         st.write("TODO")

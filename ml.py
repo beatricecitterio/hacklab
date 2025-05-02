@@ -88,13 +88,6 @@ def simplify_services(df):
     else:
         df["ChargesDiscrepancy"] = 0
     
-    # Safe mapping for Contract
-    if "Contract" in df.columns:
-        contract_map = {"Month-to-month": 0, "One year": 1, "Two year": 2}
-        df["ContractStability"] = df["Contract"].map(lambda x: contract_map.get(x, 0))
-    else:
-        df["ContractStability"] = 0
-    
     df["TechSupport_InternetSecurity"] = df[["TechSupport", "InternetSecurity"]].apply(
         lambda x: 'Yes' if 'Yes' in x.values else 'No', axis=1)
     
@@ -122,9 +115,6 @@ def simplify_services(df):
         )
     else:
         df["PaymentSafety"] = 0
-    
-    df["FullInternetSecurity"] = df[["InternetSecurity", "TechSupport_InternetSecurity"]].apply(
-        lambda x: 'Yes' if 'Yes' in x.values else 'No', axis=1)
     
     return df
 
@@ -209,11 +199,9 @@ def predict_churn(upload_file, st=None):
             print(f"Error loading file: {e}")
             return None
         
-        # # Keep a copy of the original data
-        # original_clients = clients.copy()
-        
         # Data processing
         clients = process_data(clients)
+        clients = encode_features(clients)
         client_ids = clients.index.tolist()
         
         # Calculate average customer lifetime value for later use
@@ -231,11 +219,8 @@ def predict_churn(upload_file, st=None):
             y = clients['Churn']
             X = clients.drop(columns=['Churn'])
             
-            # Encode features
-            X = encode_features(X)
-            
             # Load pre-trained model parameters from file logistic_model.pkl
-            logistic_model = pickle.load(open("logistic_model.pkl", "rb"))
+            logistic_model = pickle.load(open("ml_model.pkl", "rb"))
             
             # Make predictions
             churn_probabilities = logistic_model.predict_proba(X)[:, 1]
@@ -249,18 +234,17 @@ def predict_churn(upload_file, st=None):
             # For prediction data (without known churn status)
             if st:
                 st.warning("No 'Churn' column found. Using pre-trained model parameters.")
-            
-            # Encode features
-            X = encode_features(clients)
-            
+
+            X = clients.copy()
+
             # Load pre-trained model parameters from file logistic_model.pkl
-            logistic_model = pickle.load(open("logistic_model.pkl", "rb"))
+            logistic_model = pickle.load(open("ml_model.pkl", "rb"))
             
             # Make predictions
             churn_probabilities = logistic_model.predict_proba(X)[:, 1]
         
         # Train retention cost model using linear regression with the user-specified parameters
-        cost_features = ["MonthlyCharges", "tenure", "ContractStability"]
+        cost_features = ["MonthlyCharges", "tenure", "Contract"]
         
         # Use the global parameters (which can be overridden by stl.py)
         global retention_factor, retention_period
@@ -362,38 +346,3 @@ def predict_churn(upload_file, st=None):
         import traceback
         traceback.print_exc()
         return None
-
-# This allows the script to be run as a standalone Streamlit app
-# but doesn't execute when imported as a module
-if __name__ == "__main__":
-    import streamlit as st
-    
-    # Page title and description
-    st.title("Customer Churn Prediction")
-    st.markdown("""
-    This application predicts the likelihood of customers churning based on their data.
-    Upload your customer data file (in Excel format) to get predictions.
-    """)
-    
-    # File uploader
-    uploaded_file = st.file_uploader("Upload Customer Data (Excel format)", type=["xlsx", "xls"])
-    
-    if uploaded_file is not None:
-        st.info("Processing file... This may take a moment.")
-        
-        # Process the file and get results
-        results = predict_churn(uploaded_file, st)
-        
-        if results is not None:
-            # Display results
-            st.subheader("Churn Prediction Results")
-            st.dataframe(results)
-            
-            # Download button for results
-            csv = results.to_csv(index=False)
-            st.download_button(
-                label="Download Predictions",
-                data=csv,
-                file_name="churn_predictions.csv",
-                mime="text/csv"
-            )
