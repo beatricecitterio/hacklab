@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 import re
 import warnings
 import pickle
@@ -9,7 +10,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.metrics import roc_curve
-from imblearn.over_sampling import SMOTE
 
 # Default retention cost parameters (will be overridden by values from stl.py)
 retention_factor = 0.05
@@ -220,7 +220,7 @@ def predict_churn(upload_file, st=None):
             X = clients.drop(columns=['Churn'])
             
             # Load pre-trained model parameters from file logistic_model.pkl
-            logistic_model = pickle.load(open("ml_model.pkl", "rb"))
+            logistic_model = pickle.load(open(os.path.join(os.getcwd(), "models", "ml_model.pkl"), "rb"))
             
             # Make predictions
             churn_probabilities = logistic_model.predict_proba(X)[:, 1]
@@ -238,7 +238,7 @@ def predict_churn(upload_file, st=None):
             X = clients.copy()
 
             # Load pre-trained model parameters from file logistic_model.pkl
-            logistic_model = pickle.load(open("ml_model.pkl", "rb"))
+            logistic_model = pickle.load(open(os.path.join(os.getcwd(),"models", "ml_model.pkl"), "rb"))
             
             # Make predictions
             churn_probabilities = logistic_model.predict_proba(X)[:, 1]

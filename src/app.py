@@ -1,7 +1,9 @@
-import streamlit as st
-# from genai import draft_future_complaint
 import os
-import ml
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from src.genai import draft_future_complaint
+import streamlit as st
+import src.ml as ml
 
 
 if "init" not in st.session_state:
@@ -33,12 +35,36 @@ do_churn = st.checkbox("Predict churn", value=False)
 complaint = st.chat_input(placeholder="Insert the complaint here")
 if complaint:
     if do_draft:
-        # next_complaint = draft_future_complaint(complaint)
+        next_complaint = draft_future_complaint(complaint)
         st.write("Drafted complaint:")
-        # st.write(next_complaint)
+        st.write(next_complaint)
     if do_churn:
         st.write("Churn prediction:")
         st.write("TODO")
+        
+
+st.markdown(
+    """
+    ---
+
+    ### ML-based churn prediction
+
+    Load the csv file of a new customer to get a churn prediction based on a classification model  
+    trained on other customers' data.  
+    The model will also provide a lift analysis ...
+
+    **Note:** The csv file should follow the format of this sample file:
+    """
+)
+
+with open(os.path.join(os.getcwd(), "sample.csv"), "r") as file:
+    csv_content = file.read()
+st.download_button(
+    label="Sample file",
+    data=csv_content,
+    file_name="sample.csv",
+    mime="text/csv"
+)
         
 
 # ML-based churn prediction section

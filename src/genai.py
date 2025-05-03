@@ -1,6 +1,6 @@
 import pandas as pd
 from complaints import merge_complaints_by_customer, build_vectorizer, preprocess_complaint, get_most_similar_complaints
-from openai_api import send_request, build_prompt
+from src.openai_api import send_request, build_prompt
 
 
 def draft_future_complaint(complaints: str) -> str:
