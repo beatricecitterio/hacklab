@@ -1,4 +1,5 @@
 import pandas as pd
+from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 import re
@@ -52,15 +53,15 @@ def preprocess_complaint(complaint) -> str:
     return complaint
 
 
-def get_most_similar_complaints(target: str, complaints: dict, vectorizer, n_complaints: int=10) -> dict:
+def get_most_similar_complaints(target: str, complaints: dict, encoder, n_complaints: int=10) -> dict:
 
     target = preprocess_complaint(target)
-    target_vec = vectorizer.transform([target])
+    target_vec = encoder.encode([target])
 
     # Vectorize the complaints
     complaints_id = list(complaints.keys())
     complaints_text = [preprocess_complaint(text) for text in complaints.values()]
-    complaints_vec = vectorizer.transform(complaints_text)
+    complaints_vec = encoder.encode(complaints_text, show_progress_bar=True)
 
     # Compute the similarities
     similarities = cosine_similarity(target_vec, complaints_vec)
@@ -80,12 +81,16 @@ if __name__ == "__main__":
     # Merge complaints and build the vectorizer
     merged_complaints = merge_complaints_by_customer(complaints_df)
     complaints_text = [preprocess_complaint(text) for text in merged_complaints.values()]
-    vectorizer = build_vectorizer(complaints_text)
+
+    encoder = SentenceTransformer('bert-base-nli-mean-tokens')
 
     # Example usage
     complaint = "The streaming TV service frequently buffers or crashes, making it impossible for me to watch anything without interruptions. This has been ongoing despite my high monthly charges, and I am very frustrated with the lack of reliability."
     similar_complaints = get_most_similar_complaints(
         target=complaint,
         complaints=merged_complaints,
-        vectorizer=vectorizer
+        encoder=encoder
     )
+    customer_id, text = similar_complaints.items()[1]
+    print("Most similar complaints:")
+    print(f"Customer ID: {customer_id}, Complaint: {text}")
