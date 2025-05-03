@@ -4,7 +4,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.genai import draft_future_complaint
 import streamlit as st
 import src.ml as ml
-
+import pickle
+import joblib
 
 if "init" not in st.session_state:
     st.session_state.init = True
@@ -39,9 +40,13 @@ if complaint:
         st.write("Drafted complaint:")
         st.write(next_complaint)
     if do_churn:
-        st.write("Churn prediction:")
-        st.write("TODO")
-        
+        vectorizer = joblib.load("models/tfidf_vectorizer.pkl")
+        model = joblib.load("models/complaint_classifier.pkl")
+
+        complaint_vector = vectorizer.transform([complaint])
+        churn_prob = model.predict_proba(complaint_vector)[0][1]
+
+        st.write(f"Predicted churn probability: **{churn_prob:.2%}**")
 
 st.markdown(
     """
