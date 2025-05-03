@@ -82,7 +82,7 @@ if __name__ == "__main__":
     merged_complaints = merge_complaints_by_customer(complaints_df)
     complaints_text = [preprocess_complaint(text) for text in merged_complaints.values()]
 
-    encoder = SentenceTransformer('bert-base-nli-mean-tokens')
+    encoder = SentenceTransformer('all-MiniLM-L6-v2')
 
     # Example usage
     complaint = "The streaming TV service frequently buffers or crashes, making it impossible for me to watch anything without interruptions. This has been ongoing despite my high monthly charges, and I am very frustrated with the lack of reliability."
@@ -91,6 +91,6 @@ if __name__ == "__main__":
         complaints=merged_complaints,
         encoder=encoder
     )
-    customer_id, text = similar_complaints.items()[1]
+    customer_id, text = list(similar_complaints.items())[1]
     print("Most similar complaints:")
     print(f"Customer ID: {customer_id}, Complaint: {text}")
