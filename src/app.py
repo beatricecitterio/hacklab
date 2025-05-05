@@ -133,11 +133,11 @@ if uploaded_file is not None:
         
         if customer_search:
             # Filter results by customer ID (case-insensitive partial match)
-            filtered_results = results[results.index.astype(str).str.contains(customer_search, case=False)]
+            filtered_results = results[results["Customer_ID"].astype(str).str.contains(customer_search, case=False)]
             
             if not filtered_results.empty:
                 st.write(f"Found {len(filtered_results)} matching customers:")
-                st.dataframe(filtered_results.reset_index(drop=True))  # Remove index when displaying
+                st.dataframe(filtered_results, hide_index=True)  # Remove index when displaying
             else:
                 st.warning(f"No customers found matching '{customer_search}'")
         
