@@ -85,15 +85,11 @@ if complaint:
 
     if draft_complaint_ is not None:
         st.write("Drafted complaint:")
-        st.write(next_complaint)
-    if do_churn:
-        vectorizer = joblib.load("models/tfidf_vectorizer.pkl")
-        model = joblib.load("models/complaint_classifier.pkl")
-
-        complaint_vector = vectorizer.transform([complaint])
-        churn_prob = model.predict_proba(complaint_vector)[0][1]
-
-        st.write(f"Predicted churn probability: **{churn_prob:.2%}**")
+        st.write(draft_complaint_)
+    if input_churn_p_ is not None:
+        st.write(f"Predicted churn probability for the input complaint: **{input_churn_p_:.2%}**")
+    if draft_churn_p_ is not None:
+        st.write(f"Updated probability for the drafted one: **{draft_churn_p_:.2%}**")
         
 ### -------------------------------------------------- ###
 
@@ -108,7 +104,7 @@ st.markdown(
     trained on customers' data.  
     The model will also provide risk segmentation and profit analysis.
 
-    **Note:** The file should contain customer data with columns like those in the original dataset. Here you can find a sample file:
+    **Note:** The file should follow the format of this sample:
     """
 )
 
@@ -148,7 +144,8 @@ st.session_state.retention_factor = retention_factor
 st.session_state.retention_period = retention_period
 
 # File uploader for ML-based prediction
-uploaded_file = st.file_uploader("Upload Customer Data (Excel format)", type=["xlsx", "xls", "csv"])
+with col1:
+    uploaded_file = st.file_uploader("Upload Customer Data (CSV or Excel)", type=["xlsx", "xls", "csv"])
 
 if uploaded_file is not None:
     

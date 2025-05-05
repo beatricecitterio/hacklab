@@ -234,9 +234,6 @@ def predict_churn(upload_file, st=None):
             threshold = thresholds[threshold_ix]
         else:
             # For prediction data (without known churn status)
-            if st:
-                st.warning("No 'Churn' column found. Using pre-trained model parameters.")
-
             X = clients.copy()
 
             # Load pre-trained model parameters from file logistic_model.pkl
