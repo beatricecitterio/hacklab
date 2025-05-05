@@ -113,8 +113,9 @@ if uploaded_file is not None:
     st.session_state.results = results
 
     if results is not None:
+        displayed_results = results.copy()
         # Search functionality
-        st.subheader("Search by Customer ID")
+        st.subheader("Churn Prediction Results")
         customer_search = st.text_input("Enter Customer ID to search", "")
         
         if customer_search:
@@ -123,16 +124,16 @@ if uploaded_file is not None:
             
             if not filtered_results.empty:
                 st.write(f"Found {len(filtered_results)} matching customers:")
-                st.dataframe(filtered_results, hide_index=True)  # Remove index when displaying
+                # st.dataframe(filtered_results, hide_index=True)  # Remove index when displaying
+                displayed_results = filtered_results.copy()
             else:
                 st.warning(f"No customers found matching '{customer_search}'")
         
         # Display all results
-        st.subheader("All Churn Prediction Results")
-        st.dataframe(results, hide_index=True)
+        st.dataframe(displayed_results, hide_index=True)
         
         # Download button for results
-        csv = results.to_csv(index=False)  # Remove index when exporting
+        csv = displayed_results.to_csv(index=False)  # Remove index when exporting
         st.download_button(
             label="Download Predictions",
             data=csv,

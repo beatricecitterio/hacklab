@@ -251,14 +251,9 @@ def predict_churn(upload_file, st=None):
         
         # Use the global parameters (which can be overridden by stl.py)
         global retention_factor, retention_period
-        clients["retention_cost_est"] = retention_factor * clients["MonthlyCharges"] * retention_period
         
-        
-        cost_reg = LinearRegression()
-        cost_reg.fit(clients[cost_features], clients["retention_cost_est"])
-        
-        # Calculate retention costs
-        retention_costs = cost_reg.predict(clients[cost_features])
+        # Calculate retention costs as a percentage of monthly charges times retention period
+        retention_costs = retention_factor * clients["MonthlyCharges"] * retention_period
         
         # Calculate predicted churn based on threshold
         predicted_churn = (churn_probabilities > threshold).astype(int)
@@ -311,9 +306,21 @@ def predict_churn(upload_file, st=None):
             # True negatives have no financial impact in this simplified model
             
             if st:
-                st.success(f"Net benefit of model: ${net_benefit:.2f}")
-                st.write(f"Customer lifetime value: ${customer_lifetime_value:.2f}")
-                st.write(f"Average retention cost: ${retention_costs.mean():.2f}")
+                st.metric(
+                    label="Net Benefit of Model",
+                    value=f"${net_benefit:.2f}",
+                    help="Net benefit is calculated as the value gained from true positives minus the costs of false positives and false negatives."
+                )
+                st.metric(
+                    label="Average Customer Lifetime Value",
+                    value=f"${customer_lifetime_value:.2f}",
+                    help="Customer lifetime value is the average monthly revenue multiplied by the average tenure in months."
+                )
+                st.metric(
+                    label="Average Retention Cost",
+                    value=f"${retention_costs.mean():.2f}",
+                    help="Average of the retention cost estimated as a percentage of the monthly charges times a retention period."
+                )
             
             # Create results dataframe
             results = pd.DataFrame({
