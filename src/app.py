@@ -94,32 +94,8 @@ if complaint:
         churn_prob = model.predict_proba(complaint_vector)[0][1]
 
         st.write(f"Predicted churn probability: **{churn_prob:.2%}**")
-
-
-# ML-based churn prediction section
-st.markdown(
-    """
-    ---
-
-    ### ML-based churn prediction
-
-    Load a file of customers (CSV or Excel) to get churn predictions based on a classification model  
-    trained on customers' data.  
-    The model will also provide risk segmentation and profit analysis.
-
-    **Note:** The csv should follow the format of this sample file:
-    """
-)
-
-with open(os.path.join(os.getcwd(), "sample_data.csv"), "r") as file:
-    csv_content = file.read()
-st.download_button(
-    label="Sample file",
-    data=csv_content,
-    file_name="sample_data.csv",
-    mime="text/csv"
-)
         
+### -------------------------------------------------- ###
 
 # ML-based churn prediction section
 st.markdown(

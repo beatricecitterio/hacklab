@@ -245,9 +245,6 @@ def predict_churn(upload_file, st=None):
             # Make predictions
             churn_probabilities = logistic_model.predict_proba(X)[:, 1]
         
-        # Train retention cost model using linear regression with the user-specified parameters
-        cost_features = ["MonthlyCharges", "tenure", "Contract"]
-        
         # Use the global parameters (which can be overridden by stl.py)
         global retention_factor, retention_period
         
