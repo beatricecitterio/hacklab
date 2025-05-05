@@ -1,24 +1,25 @@
+import os
 import pandas as pd
-from complaints import merge_complaints_by_customer, build_vectorizer, preprocess_complaint, get_most_similar_complaints
+from complaints import merge_complaints_by_customer, preprocess_complaint, get_most_similar_complaints
+from sentence_transformers import SentenceTransformer
 from src.openai_api import send_request, build_prompt
 
 
 def draft_future_complaint(complaints: str) -> str:
 
     # Load the complaints
-    complaints_df = pd.read_csv('Complaints.csv')
+    complaints_df = pd.read_csv(os.path.join(os.getcwd(), 'data', 'Complaints.csv'))
     complaints_df['complaint'] = complaints_df['complaint'].astype(str)
 
     # Merge complaints and build the vectorizer
     merged_complaints = merge_complaints_by_customer(complaints_df)
-    complaints_text = [preprocess_complaint(text) for text in merged_complaints.values()]
-    vectorizer = build_vectorizer(complaints_text)
+    encoder = SentenceTransformer('all-MiniLM-L6-v2')
 
     # Get the most similar complaints
     similar_complaints = get_most_similar_complaints(
         target=preprocess_complaint(complaints),
         complaints=merged_complaints,
-        vectorizer=vectorizer
+        encoder=encoder
     )
 
     ### -------------------------------------------------- ###
@@ -43,7 +44,7 @@ def draft_future_complaint(complaints: str) -> str:
     status_code, response = send_request(
         input=prompt,
         model="gpt-4.1-mini",
-        temperature=0.8,
+        temperature=0.9,
         max_tokens=1000
     )
     if status_code != 200:
@@ -53,8 +54,8 @@ def draft_future_complaint(complaints: str) -> str:
             return "Error: Unable to process the request. Please try again later."
     
     next_complaint = response.output[0].content[0].text
-    print("Next complaint prediction:")
-    print(next_complaint)
+    # print("Next complaint prediction:")
+    # print(next_complaint)
     return next_complaint
 
 

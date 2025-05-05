@@ -1,8 +1,9 @@
+import os
 import pandas as pd
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import TfidfVectorizer
 import re
+from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 def merge_complaints_by_customer(complaints: pd.DataFrame) -> dict:
@@ -61,7 +62,7 @@ def get_most_similar_complaints(target: str, complaints: dict, encoder, n_compla
     # Vectorize the complaints
     complaints_id = list(complaints.keys())
     complaints_text = [preprocess_complaint(text) for text in complaints.values()]
-    complaints_vec = encoder.encode(complaints_text, show_progress_bar=True)
+    complaints_vec = encoder.encode(complaints_text, show_progress_bar=False)
 
     # Compute the similarities
     similarities = cosine_similarity(target_vec, complaints_vec)
@@ -75,13 +76,11 @@ def get_most_similar_complaints(target: str, complaints: dict, encoder, n_compla
 if __name__ == "__main__":
     
     # Load the complaints
-    complaints_df = pd.read_csv('complaints.csv')
+    complaints_df = pd.read_csv(os.path.join(os.getcwd(), 'data', 'Complaints.csv'))
     complaints_df['complaint'] = complaints_df['complaint'].astype(str)
 
     # Merge complaints and build the vectorizer
     merged_complaints = merge_complaints_by_customer(complaints_df)
-    complaints_text = [preprocess_complaint(text) for text in merged_complaints.values()]
-
     encoder = SentenceTransformer('all-MiniLM-L6-v2')
 
     # Example usage

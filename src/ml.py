@@ -6,9 +6,8 @@ import warnings
 import pickle
 warnings.filterwarnings("ignore")
 
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import roc_curve
 
 # Default retention cost parameters (will be overridden by values from stl.py)
