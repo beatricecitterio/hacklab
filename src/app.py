@@ -79,11 +79,11 @@ st.markdown(
 
     ### ML-based churn prediction
 
-    Load an Excel file of customers to get churn predictions based on a classification model  
+    Load a file of customers (CSV or Excel) to get churn predictions based on a classification model  
     trained on customers' data.  
     The model will also provide risk segmentation and profit analysis.
 
-    **Note:** The Excel file should contain customer data with columns like those in the original dataset.
+    **Note:** The file should contain customer data with columns like those in the original dataset.
     """
 )
 
@@ -114,10 +114,9 @@ st.session_state.retention_factor = retention_factor
 st.session_state.retention_period = retention_period
 
 # File uploader for ML-based prediction
-uploaded_file = st.file_uploader("Upload Customer Data (Excel format)", type=["xlsx", "xls"])
+uploaded_file = st.file_uploader("Upload Customer Data (Excel format)", type=["xlsx", "xls", "csv"])
 
 if uploaded_file is not None:
-    # st.info("Processing file... This may take a moment.")
     
     # Override the retention cost calculation in ml.py by modifying the module
     ml.retention_factor = retention_factor

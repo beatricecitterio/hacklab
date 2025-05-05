@@ -191,7 +191,10 @@ def predict_churn(upload_file, st=None):
     try:
         # Load the uploaded data
         try:
-            clients = pd.read_excel(upload_file, index_col=0)
+            if upload_file.name.endswith('.csv'):
+                clients = pd.read_csv(upload_file, index_col=0)
+            elif upload_file.name.endswith(('.xls', '.xlsx')):
+                clients = pd.read_excel(upload_file, index_col=0)
 
         except Exception as e:
             if st:
