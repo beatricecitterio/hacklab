@@ -42,11 +42,19 @@ def convert_boolean_variables(df):
     """Convert all categorical variables with two possible values into booleans."""
     new_df = df.copy()
 
-    for col in df.columns:
-        if df[col].dtype == "object" and df[col].nunique() == 2:
-            # Map the two unique values to 1 and 0
-            unique_values = df[col].unique()
-            new_df[col] = new_df[col].map({unique_values[0]: 0, unique_values[1]: 1})
+    boolean_cols = ["gender", "Partner", "Dependents", "PhoneService",
+                    "MultipleLines", "OnlineSecurity", "OnlineBackup",
+                    "DeviceProtection", "TechSupport", "StreamingTV",
+                    "StreamingMovies", "PaperlessBilling"]
+
+    for col in boolean_cols:
+        if col == "gender":
+            new_df["gender"] = new_df["gender"].map({'Female': 0, 'Male': 1})
+        else:
+            new_df[col] = new_df[col].map({'Yes': 1, 'No': 0})
+    
+    if "Churn" in new_df.columns:
+        new_df["Churn"] = new_df["Churn"].map({'Yes': 1, 'No': 0})
 
     return new_df
 
@@ -75,9 +83,9 @@ def simplify_services(df):
     
     # Now proceed with feature engineering
     df["InternetSecurity"] = df[["OnlineSecurity", "OnlineBackup", "DeviceProtection"]].apply(
-        lambda row: 'Yes' if 'Yes' in row.values else 'No', axis=1)
+        lambda row: 1 if 'Yes' in row.values else 0, axis=1)
     df["Streaming"] = df[["StreamingTV", "StreamingMovies"]].apply(
-        lambda row: 'Yes' if 'Yes' in row.values else 'No', axis=1)
+        lambda row: 1 if 'Yes' in row.values else 0, axis=1)
     df["HouseholdComplexity"] = df[["Partner", "Dependents"]].apply(
         lambda x: sum(val == 'Yes' for val in x), axis=1)
     
@@ -88,13 +96,7 @@ def simplify_services(df):
         df["ChargesDiscrepancy"] = 0
     
     df["TechSupport_InternetSecurity"] = df[["TechSupport", "InternetSecurity"]].apply(
-        lambda x: 'Yes' if 'Yes' in x.values else 'No', axis=1)
-    
-    # Handle SeniorCitizen mapping
-    if "SeniorCitizen" in df.columns:
-        df["Senior"] = df["SeniorCitizen"].map({1: "Yes", 0: "No"})
-    else:
-        df["Senior"] = "No"
+        lambda x: 1 if 'Yes' in x.values else 0, axis=1)
     
     # Financial strain calculation
     if "MonthlyCharges" in df.columns and "tenure" in df.columns:
@@ -165,14 +167,14 @@ def encode_features(df):
     # Make a copy to avoid modifying the original dataframe
     df = df.copy()
     
+    labeled_cols = [
+        "Contract", "PaymentMethod", "InternetService"
+        ]
     # Encode remaining categorical variables
-    for col in df.columns:
-        if df[col].dtype == "object" and df[col].nunique() > 2:
-            le = LabelEncoder()
-            df[col] = le.fit_transform(df[col])
-    
-    # One-hot encoding
-    df = pd.get_dummies(df, drop_first=True)
+    for col in labeled_cols:
+        #load the label encoder from file
+        le = pickle.load(open(os.path.join(os.getcwd(), "mappings", f"label_encoder_{col}.pkl"), "rb"))
+        df[col] = le.transform(df[col])
     
     return df
 
@@ -227,11 +229,8 @@ def predict_churn(upload_file, st=None):
             # Make predictions
             churn_probabilities = logistic_model.predict_proba(X)[:, 1]
             
-            # Calculate optimal threshold using ROC curve
-            fpr, tpr, thresholds = roc_curve(y, churn_probabilities)
-            gmeans = np.sqrt(tpr * (1 - fpr))
-            threshold_ix = np.argmax(gmeans)
-            threshold = thresholds[threshold_ix]
+            # Use optimal threshold computed from ROC curve
+            threshold = 0.2754246183256664
         else:
             # For prediction data (without known churn status)
             X = clients.copy()
@@ -328,7 +327,11 @@ def predict_churn(upload_file, st=None):
             # In this case, we can't calculate actual profit since we don't know the true churn value
             if st:
                 st.info("Cannot calculate actual profit without known churn values.")
-                st.write(f"Average retention cost: ${retention_costs.mean():.2f}")
+                st.metric(
+                    label="Average Retention Cost",
+                    value=f"${retention_costs.mean():.2f}",
+                    help="Average of the retention cost estimated as a percentage of the monthly charges times a retention period."
+                )
 
             # Create results dataframe
             results = pd.DataFrame({
