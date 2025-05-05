@@ -85,27 +85,54 @@ if complaint:
 
     if draft_complaint_ is not None:
         st.write("Drafted complaint:")
-        st.write(draft_complaint_)
-    if input_churn_p_ is not None:
-        st.write(f"Predicted churn probability on the input complaint: **{input_churn_p_:.2%}**")
-    if draft_churn_p_ is not None:
-        st.write(f"Predicted churn probability on the drafted complaint: **{draft_churn_p_:.2%}**")
+        st.write(next_complaint)
+    if do_churn:
+        vectorizer = joblib.load("models/tfidf_vectorizer.pkl")
+        model = joblib.load("models/complaint_classifier.pkl")
+
+        complaint_vector = vectorizer.transform([complaint])
+        churn_prob = model.predict_proba(complaint_vector)[0][1]
+
+        st.write(f"Predicted churn probability: **{churn_prob:.2%}**")
 
 
-### -------------------------------------------------- ###
-
-
+# ML-based churn prediction section
 st.markdown(
     """
     ---
 
     ### ML-based churn prediction
 
-    Load the csv file of one or more customers to get a churn prediction based on a classification model  
-    trained on other customers' data.  
+    Load a file of customers (CSV or Excel) to get churn predictions based on a classification model  
+    trained on customers' data.  
     The model will also provide risk segmentation and profit analysis.
 
     **Note:** The csv should follow the format of this sample file:
+    """
+)
+
+with open(os.path.join(os.getcwd(), "sample_data.csv"), "r") as file:
+    csv_content = file.read()
+st.download_button(
+    label="Sample file",
+    data=csv_content,
+    file_name="sample_data.csv",
+    mime="text/csv"
+)
+        
+
+# ML-based churn prediction section
+st.markdown(
+    """
+    ---
+
+    ### ML-based churn prediction
+
+    Load a file of customers (CSV or Excel) to get churn predictions based on a classification model  
+    trained on customers' data.  
+    The model will also provide risk segmentation and profit analysis.
+
+    **Note:** The file should contain customer data with columns like those in the original dataset. Here you can find a sample file:
     """
 )
 
@@ -145,11 +172,9 @@ st.session_state.retention_factor = retention_factor
 st.session_state.retention_period = retention_period
 
 # File uploader for ML-based prediction
-with col1:
-    uploaded_file = st.file_uploader("Upload customer data (Excel format)", type=["xlsx", "xls"])
+uploaded_file = st.file_uploader("Upload Customer Data (Excel format)", type=["xlsx", "xls", "csv"])
 
 if uploaded_file is not None:
-    # st.info("Processing file... This may take a moment.")
     
     # Override the retention cost calculation in ml.py by modifying the module
     ml.retention_factor = retention_factor
@@ -160,26 +185,27 @@ if uploaded_file is not None:
     st.session_state.results = results
 
     if results is not None:
+        displayed_results = results.copy()
         # Search functionality
         st.markdown("##### Search by customer ID")
         customer_search = st.text_input("Enter customer ID to search", "")
         
         if customer_search:
             # Filter results by customer ID (case-insensitive partial match)
-            filtered_results = results[results.index.astype(str).str.contains(customer_search, case=False)]
+            filtered_results = results[results["Customer_ID"].astype(str).str.contains(customer_search, case=False)]
             
             if not filtered_results.empty:
                 st.write(f"Found {len(filtered_results)} matching customers:")
-                st.dataframe(filtered_results.reset_index(drop=True))  # Remove index when displaying
+                # st.dataframe(filtered_results, hide_index=True)  # Remove index when displaying
+                displayed_results = filtered_results.copy()
             else:
                 st.warning(f"No customers found matching '{customer_search}'")
         
         # Display all results
-        st.markdown("##### All churn prediction results")
-        st.dataframe(results, hide_index=True)
+        st.dataframe(displayed_results, hide_index=True)
         
         # Download button for results
-        csv = results.to_csv(index=False)  # Remove index when exporting
+        csv = displayed_results.to_csv(index=False)  # Remove index when exporting
         st.download_button(
             label="Download predictions",
             data=csv,
