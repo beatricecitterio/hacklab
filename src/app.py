@@ -48,29 +48,6 @@ if complaint:
 
         st.write(f"Predicted churn probability: **{churn_prob:.2%}**")
 
-st.markdown(
-    """
-    ---
-
-    ### ML-based churn prediction
-
-    Load the csv file of a new customer to get a churn prediction based on a classification model  
-    trained on other customers' data.  
-    The model will also provide a lift analysis ...
-
-    **Note:** The csv file should follow the format of this sample file:
-    """
-)
-
-with open(os.path.join(os.getcwd(), "sample.csv"), "r") as file:
-    csv_content = file.read()
-st.download_button(
-    label="Sample file",
-    data=csv_content,
-    file_name="sample.csv",
-    mime="text/csv"
-)
-        
 
 # ML-based churn prediction section
 st.markdown(
@@ -83,8 +60,17 @@ st.markdown(
     trained on customers' data.  
     The model will also provide risk segmentation and profit analysis.
 
-    **Note:** The file should contain customer data with columns like those in the original dataset.
+    **Note:** The file should contain customer data with columns like those in the original dataset. Here you can find a sample file:
     """
+)
+
+with open(os.path.join(os.getcwd(), "sample.csv"), "r") as file:
+    csv_content = file.read()
+st.download_button(
+    label="Sample file",
+    data=csv_content,
+    file_name="sample.csv",
+    mime="text/csv"
 )
 
 # Retention cost parameters
