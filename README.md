@@ -19,7 +19,7 @@ Everything was developed with a focus on delivering actionable business insights
 We then integrated the machine learning approach with some textual analysis to provide other, more interpretable insights on the customer complaints.  
 The techniques used in this section included:
 - word frequency examination and topic modeling to identify the main themes in the complaints and verify whether they aligned with the factors identified as leading to churn in the machine learning models
-- sentiment analysis to understand how the complaints' tone evolveed over time
+- sentiment analysis to understand how the complaints' tone evolved over time
 
 All features are available in a Streamlit web application, which comprises two sections:
 
